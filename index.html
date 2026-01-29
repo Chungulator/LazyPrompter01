@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="description" content="Transform ideas into detailed AI art prompts for event posters">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Prompter">
+    <title>My Lazy Ass Prompter</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z'/%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #09090b;
+            color: #fafafa;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        
+        .container {
+            padding: 1.5rem 1rem;
+            max-width: 42rem;
+            margin: 0 auto;
+        }
+        
+        @media (min-width: 640px) {
+            .container {
+                padding: 2rem 1.5rem;
+            }
+        }
+        
+        .header {
+            margin-bottom: 2rem;
+        }
+        
+        @media (min-width: 640px) {
+            .header {
+                margin-bottom: 2.5rem;
+            }
+        }
+        
+        .header-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .icon-wrapper {
+            position: relative;
+        }
+        
+        .sparkle-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #fbbf24;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @media (min-width: 640px) {
+            .sparkle-icon {
+                width: 1.5rem;
+                height: 1.5rem;
+            }
+        }
+        
+        .icon-glow {
+            position: absolute;
+            inset: 0;
+            filter: blur(12px);
+            background-color: rgba(251, 191, 36, 0.2);
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: -0.025em;
+            color: #fafafa;
+        }
+        
+        @media (min-width: 640px) {
+            h1 {
+                font-size: 1.875rem;
+            }
+        }
+        
+        .subtitle {
+            font-size: 0.75rem;
+            color: #71717a;
+            margin-left: 1.75rem;
+        }
+        
+        @media (min-width: 640px) {
+            .subtitle {
+                font-size: 0.875rem;
+                margin-left: 2rem;
+            }
+        }
+        
+        .install-prompt {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .install-prompt.show {
+            display: flex;
+        }
+        
+        .install-text {
+            flex: 1;
+            font-size: 0.875rem;
+            color: #d4d4d8;
+        }
+        
+        .btn-install {
+            background-color: #fbbf24;
+            color: #09090b;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-install:hover {
+            background-color: #f59e0b;
+        }
+        
+        .btn-dismiss {
+            background: none;
+            border: none;
+            color: #71717a;
+            cursor: pointer;
+            padding: 0.25rem;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+        
+        .form-card, .output-card {
+            background-color: rgba(24, 24, 27, 0.5);
+            border-radius: 0.5rem;
+            border: 1px solid rgba(39, 39, 42, 0.8);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @media (min-width: 640px) {
+            .form-card, .output-card {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+        
+        .gradient-overlay-amber {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom right, rgba(251, 191, 36, 0.05), transparent);
+            pointer-events: none;
+        }
+        
+        .gradient-overlay-emerald {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom right, rgba(52, 211, 153, 0.05), transparent);
+            pointer-events: none;
+        }
+        
+        .form-content, .output-content {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .form-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 640px) {
+            .form-fields {
+                gap: 1.25rem;
+            }
+        }
+        
+        .field-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #d4d4d8;
+            margin-bottom: 0.375rem;
+        }
+        
+        @media (min-width: 640px) {
+            label {
+                font-size: 0.875rem;
+            }
+        }
+        
+        .required {
+            color: #fbbf24;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            background-color: rgba(39, 39, 42, 0.5);
+            border: 1px solid rgba(63, 63, 70, 0.8);
+            color: #fafafa;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        @media (min-width: 640px) {
+            input, textarea {
+                padding: 0.75rem;
+                font-size: 1rem;
+            }
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: #52525b;
+        }
+        
+        input:hover, textarea:hover {
+            border-color: #52525b;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: rgba(251, 191, 36, 0.6);
+            box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.3);
+            background-color: rgba(39, 39, 42, 0.7);
+        }
+        
+        input.optional:focus, textarea.optional:focus {
+            border-color: #52525b;
+            box-shadow: 0 0 0 1px rgba(82, 82, 91, 0.3);
+        }
+        
+        textarea {
+            resize: none;
+            min-height: 4.5rem;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1.25rem;
+        }
+        
+        @media (min-width: 640px) {
+            .button-group {
+                gap: 0.75rem;
+                margin-top: 1.5rem;
+            }
+        }
+        
+        button {
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.625rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        @media (min-width: 640px) {
+            button {
+                font-size: 1rem;
+                padding: 0.75rem 1rem;
+            }
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        button:hover {
+            transform: scale(1.02);
+        }
+        
+        .btn-primary {
+            flex: 1;
+            background-color: #fbbf24;
+            color: #09090b;
+            border: 1px solid rgba(245, 158, 11, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(251, 191, 36, 0.25);
+        }
+        
+        .btn-primary:hover {
+            background-color: #f59e0b;
+            box-shadow: 0 10px 15px -3px rgba(251, 191, 36, 0.4);
+        }
+        
+        .btn-secondary {
+            background-color: #27272a;
+            color: #d4d4d8;
+            border: 1px solid rgba(63, 63, 70, 0.8);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #3f3f46;
+            border-color: #52525b;
+        }
+        
+        .btn-copy {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+        }
+        
+        @media (min-width: 640px) {
+            .btn-copy {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+        
+        .btn-copy:hover {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+        
+        .icon {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        .icon-sm {
+            width: 0.875rem;
+            height: 0.875rem;
+        }
+        
+        @media (min-width: 640px) {
+            .icon-sm {
+                width: 1rem;
+                height: 1rem;
+            }
+        }
+        
+        .output-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        
+        @media (min-width: 640px) {
+            .output-header {
+                margin-bottom: 1rem;
+            }
+        }
+        
+        .output-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #fafafa;
+        }
+        
+        @media (min-width: 640px) {
+            .output-title {
+                font-size: 1.125rem;
+            }
+        }
+        
+        .prompt-text {
+            background-color: rgba(9, 9, 11, 0.7);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            color: #d4d4d8;
+            line-height: 1.625;
+            font-size: 0.75rem;
+            border: 1px solid rgba(39, 39, 42, 0.8);
+        }
+        
+        @media (min-width: 640px) {
+            .prompt-text {
+                padding: 1rem;
+                font-size: 0.875rem;
+            }
+        }
+        
+        .char-count {
+            color: #52525b;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Install Prompt -->
+        <div id="installPrompt" class="install-prompt">
+            <div class="install-text">
+                Install this app for quick access and offline use
+            </div>
+            <button class="btn-install" onclick="installApp()">Install</button>
+            <button class="btn-dismiss" onclick="dismissInstall()">×</button>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title-wrapper">
+                <div class="icon-wrapper">
+                    <svg class="sparkle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                    </svg>
+                    <div class="icon-glow"></div>
+                </div>
+                <h1>My Lazy Ass Prompter</h1>
+            </div>
+            <p class="subtitle">Transform ideas into detailed AI art prompts</p>
+        </div>
+
+        <!-- Input Form -->
+        <div class="form-card">
+            <div class="gradient-overlay-amber"></div>
+            <div class="form-content">
+                <div class="form-fields">
+                    <div class="field-group">
+                        <label>Band Name / Logo <span class="required">*</span></label>
+                        <input type="text" id="bandName" placeholder="The Midnight Riders">
+                    </div>
+
+                    <div class="field-group">
+                        <label>Venue and Location <span class="required">*</span></label>
+                        <input type="text" id="venue" placeholder="The Roxy Theatre, Los Angeles">
+                    </div>
+
+                    <div class="field-group">
+                        <label>Date <span class="required">*</span></label>
+                        <input type="text" id="date" placeholder="Saturday, March 15th, 2025">
+                    </div>
+
+                    <div class="field-group">
+                        <label>Theme/Style <span class="required">*</span></label>
+                        <input type="text" id="theme" placeholder="psychedelic 60s, cyberpunk neon">
+                    </div>
+
+                    <div class="field-group">
+                        <label>Text Style</label>
+                        <input type="text" id="textStyle" class="optional" placeholder="art deco, gothic blackletter">
+                    </div>
+
+                    <div class="field-group">
+                        <label>Border</label>
+                        <input type="text" id="border" class="optional" placeholder="ornate victorian, geometric">
+                    </div>
+
+                    <div class="field-group">
+                        <label>Color Palette</label>
+                        <input type="text" id="colorPalette" class="optional" placeholder="vibrant neon pinks and blues">
+                    </div>
+
+                    <div class="field-group">
+                        <label>Additional Themes</label>
+                        <textarea id="additional" class="optional" placeholder="cosmic imagery, urban landscapes, nature motifs"></textarea>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="generatePrompt()">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                        </svg>
+                        Generate
+                    </button>
+                    <button class="btn-secondary" onclick="clearForm()">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generated Prompt Output -->
+        <div id="outputSection" class="output-card hidden">
+            <div class="gradient-overlay-emerald"></div>
+            <div class="output-content">
+                <div class="output-header">
+                    <h2 class="output-title">Your Prompt</h2>
+                    <button class="btn-copy" onclick="copyToClipboard()">
+                        <svg id="copyIcon" class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        <svg id="checkIcon" class="icon-sm hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span id="copyText">Copy</span>
+                    </button>
+                </div>
+                <div class="prompt-text" id="promptOutput"></div>
+                <p class="char-count" id="charCount"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PWA Install functionality
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').classList.add('show');
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                    document.getElementById('installPrompt').classList.remove('show');
+                });
+            }
+        }
+
+        function dismissInstall() {
+            document.getElementById('installPrompt').classList.remove('show');
+        }
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(() => console.log('Service Worker registered'))
+                .catch((err) => console.log('Service Worker registration failed', err));
+        }
+
+        // App functionality
+        function generatePrompt() {
+            const bandName = document.getElementById('bandName').value;
+            const venue = document.getElementById('venue').value;
+            const date = document.getElementById('date').value;
+            const theme = document.getElementById('theme').value;
+            const textStyle = document.getElementById('textStyle').value;
+            const border = document.getElementById('border').value;
+            const colorPalette = document.getElementById('colorPalette').value;
+            const additional = document.getElementById('additional').value;
+
+            if (!bandName || !venue || !date || !theme) {
+                alert('Please fill in at least Band Name, Venue, Date, and Theme/Style');
+                return;
+            }
+
+            let prompt = `Create a striking event poster design featuring `;
+            
+            if (bandName) {
+                prompt += `the band name "${bandName}" displayed prominently `;
+                if (textStyle) {
+                    prompt += `in ${textStyle} typography, `;
+                } else {
+                    prompt += `in bold, eye-catching lettering, `;
+                }
+            }
+            
+            if (theme) {
+                prompt += `capturing a ${theme} aesthetic with rich visual atmosphere. `;
+            }
+            
+            prompt += `The poster includes essential event details: ${venue} as the venue location and ${date} as the date, `;
+            prompt += `seamlessly integrated into the composition. `;
+            
+            if (border) {
+                prompt += `Frame the design with ${border} border treatment that complements the overall composition. `;
+            } else {
+                prompt += `Use an elegant border that enhances the design's visual impact. `;
+            }
+            
+            if (additional) {
+                prompt += `Incorporate ${additional} elements to enrich the visual narrative. `;
+            }
+            
+            prompt += `The design should be highly detailed, balanced, and suitable for print, with strong visual hierarchy ensuring all text remains readable. `;
+            
+            if (colorPalette) {
+                prompt += `Use a ${colorPalette} color palette that reinforces the chosen aesthetic while maintaining professional poster design standards.`;
+            } else {
+                prompt += `Use a cohesive color palette that reinforces the chosen aesthetic while maintaining professional poster design standards.`;
+            }
+            
+            if (prompt.length > 1100) {
+                prompt = prompt.substring(0, 1097) + '...';
+            }
+
+            document.getElementById('promptOutput').textContent = prompt;
+            document.getElementById('charCount').textContent = `${prompt.length} / ~1100 characters`;
+            const outputSection = document.getElementById('outputSection');
+            outputSection.classList.remove('hidden');
+            outputSection.classList.add('fade-in');
+            
+            outputSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function copyToClipboard() {
+            const promptText = document.getElementById('promptOutput').textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                document.getElementById('copyIcon').classList.add('hidden');
+                document.getElementById('checkIcon').classList.remove('hidden');
+                document.getElementById('copyText').textContent = 'Copied';
+                
+                setTimeout(() => {
+                    document.getElementById('copyIcon').classList.remove('hidden');
+                    document.getElementById('checkIcon').classList.add('hidden');
+                    document.getElementById('copyText').textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        function clearForm() {
+            document.getElementById('bandName').value = '';
+            document.getElementById('venue').value = '';
+            document.getElementById('date').value = '';
+            document.getElementById('theme').value = '';
+            document.getElementById('textStyle').value = '';
+            document.getElementById('border').value = '';
+            document.getElementById('colorPalette').value = '';
+            document.getElementById('additional').value = '';
+            document.getElementById('outputSection').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
